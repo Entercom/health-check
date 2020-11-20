@@ -1,14 +1,12 @@
 'use strict';
 
-var statList;
+var infoList;
 const _ = require('lodash'),
   bluebird = require('bluebird'),
   express = require('express'),
-  v8 = require('v8'),
   os = require('os'),
   fs = require('fs'),
-  yaml = require('js-yaml'),
-  healthRoute = process.env.HEALTH_CHECK_PATH;
+  yaml = require('js-yaml');
 
 /**
  * @param {string} filename
@@ -31,43 +29,41 @@ function getYaml(filename) {
   return yaml.safeLoad(readFile(filename + '.yaml') || readFile(filename + '.yml'));
 }
 
-statList = {
+infoList = {
   nodeVersionExpected: function () { return _.get(getYaml('circle'), 'machine.node.version'); },
   nodeVersionActual: function () { return process.versions.node; },
-  memoryUsage: function () { return process.memoryUsage(); },
-  uptime: function () { return process.uptime(); },
-  totalMem: function () { return os.totalmem(); },
-  freeMem: function () { return os.freemem(); },
-  loadAvg: function () { return os.loadavg(); },
-  heap: function () { return v8.getHeapStatistics(); },
   host: function () { return os.hostname(); }
 };
 
-
-function renderHealth(allStats) {
+/**
+ * Render all info and errors
+ * @param allInfo
+ * @param allErrors
+ * @returns {function(*, *): Promise<unknown>}
+ */
+function renderHealth(allInfo, allErrors) {
   return function (req, res) {
-    var stats = {},
-      errors = [];
+    let info = {};
+    let errors = allErrors || {};
 
-    return bluebird.all(_.map(allStats, function (value, key) {
-      var promise = bluebird.try(value).then(function (result) { stats[key] = result; });
-
-      if (value.isRequired) {
-        return promise;
-      } else {
-        return promise.catch(function (ex) {
-          errors.push(ex.message);
+    return bluebird.all(_.map(allInfo, function (value, key) {
+      let promise = bluebird.try(value)
+        .then(function (result) {
+          info[key] = result;
+        }).catch(function(ex) {
+          // Track all errors instead of catching on the .all
+          errors[key] = ex.message;
         });
-      }
+
+      return promise;
     })).then(function () {
-      if (errors.length) {
-        stats.errors = errors;
+      let statusCode = 200;
+      if (Object.keys(errors).length) {
+        info.errors = errors;
+        statusCode = 500;
       }
-      res.status(200).send(stats);
-    }).catch(function (ex) {
-      errors.push(ex.message);
-      stats.errors = errors;
-      res.status(500).send(stats);
+
+      res.status(statusCode).send(info);
     });
   };
 }
@@ -76,38 +72,42 @@ function renderHealth(allStats) {
  *
  * @param {express.Router} router
  * @param {object} [options]
- * @param {object} [options.stats]  Hash of extra stats to include with their functions or objects
+ * @param {object} [options.info]  Hash of extra info to include with their functions or objects
  * @param {[string]} [options.env]  Environment Variables to include
- * @param {[string]} [options.required]  Stats that will cause a 500 if missing
+ * @param {[string]} [options.required]  Info that will cause a 500 if missing
+ * @param {[string]} [options.path]  Custom route for the health-check
  * @returns {*}
  */
 function routes(options) {
   options = options || {};
-  const router = express.Router(),
-    stats = _.assign(options.stats || {}, statList);
+  const errors = {},
+    router = express.Router(),
+    info = _.assign(options.info || {}, infoList),
+    path = options.path || '';
 
   // shortcut to list environment variables
   _.each(options.env, function (value) {
-    stats[value] = function () { return process.env[value]; };
+    info[value] = function () { return process.env[value]; };
   });
 
   // fail when these functions fail
   _.each(options.required, function (value) {
-    if (_.isObject(stats[value]) || _.isFunction(stats[value])) {
-      stats[value].isRequired = true;
+    if (_.isObject(info[value]) || _.isFunction(info[value])) {
+      info[value].isRequired = true;
     } else {
-      throw new Error('Required stat ' + value + ' is not defined.');
+      errors[value] = 'Required stat ' + value + ' is not defined.';
     }
   });
 
-  if (healthRoute) {
-  // e.g. /microservice-name/health-check
-  router.get('/' + healthRoute + '/health-check', renderHealth(stats));
+  if (path) {
+    // e.g. /microservice-name/health-check
+    router.get('/' + path + '/health-check', renderHealth(info, errors));
+  } else {
+    router.get('/health-check', renderHealth(info, errors));
   }
-  router.get('/health-check', renderHealth(stats));
 
   return router;
 }
 
-module.exports = routes
+module.exports = routes;
 module.exports.renderHealth = renderHealth;
