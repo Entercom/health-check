@@ -1,12 +1,23 @@
 'use strict';
 
-var infoList;
-const _ = require('lodash'),
+const _assign = require('lodash/assign'),
+  _each = require('lodash/each'),
+  _get = require('lodash/get'),
+  _isEmpty = require('lodash/isEmpty'),
+  _isFunction = require('lodash/isFunction'),
+  _isObject = require('lodash/isObject'),
+  _map = require('lodash/map'),
   bluebird = require('bluebird'),
   express = require('express'),
   os = require('os'),
   fs = require('fs'),
   yaml = require('js-yaml');
+
+let infoList = {
+  nodeVersionExpected: function () { return _get(getYaml('circle'), 'machine.node.version'); },
+  nodeVersionActual: function () { return process.versions.node; },
+  host: function () { return os.hostname(); }
+};
 
 /**
  * @param {string} filename
@@ -29,12 +40,6 @@ function getYaml(filename) {
   return yaml.safeLoad(readFile(filename + '.yaml') || readFile(filename + '.yml'));
 }
 
-infoList = {
-  nodeVersionExpected: function () { return _.get(getYaml('circle'), 'machine.node.version'); },
-  nodeVersionActual: function () { return process.versions.node; },
-  host: function () { return os.hostname(); }
-};
-
 /**
  * Render all info and errors
  * @param allInfo
@@ -46,7 +51,7 @@ function renderHealth(allInfo, allErrors) {
     let info = {};
     let errors = allErrors || {};
 
-    return bluebird.all(_.map(allInfo, function (value, key) {
+    return bluebird.all(_map(allInfo, function (value, key) {
       let promise = bluebird.try(value)
         .then(function (result) {
           info[key] = result;
@@ -58,7 +63,7 @@ function renderHealth(allInfo, allErrors) {
       return promise;
     })).then(function () {
       let statusCode = 200;
-      if (Object.keys(errors).length) {
+      if (!_isEmpty(errors)) {
         info.errors = errors;
         statusCode = 500;
       }
@@ -82,17 +87,17 @@ function routes(options) {
   options = options || {};
   const errors = {},
     router = express.Router(),
-    info = _.assign(options.info || {}, infoList),
+    info = _assign(options.info || {}, infoList),
     path = options.path || '';
 
   // shortcut to list environment variables
-  _.each(options.env, function (value) {
+  _each(options.env, function (value) {
     info[value] = function () { return process.env[value]; };
   });
 
   // fail when these functions fail
-  _.each(options.required, function (value) {
-    if (_.isObject(info[value]) || _.isFunction(info[value])) {
+  _each(options.required, function (value) {
+    if (_isObject(info[value]) || _isFunction(info[value])) {
       info[value].isRequired = true;
     } else {
       errors[value] = 'Required stat ' + value + ' is not defined.';
