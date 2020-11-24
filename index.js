@@ -9,36 +9,12 @@ const _assign = require('lodash/assign'),
   _map = require('lodash/map'),
   bluebird = require('bluebird'),
   express = require('express'),
-  os = require('os'),
-  fs = require('fs'),
-  yaml = require('js-yaml');
+  os = require('os');
 
 let infoList = {
-  nodeVersionExpected: function () { return _get(getYaml('circle'), 'machine.node.version'); },
   nodeVersionActual: function () { return process.versions.node; },
   host: function () { return os.hostname(); }
 };
-
-/**
- * @param {string} filename
- * @returns {string}
- */
-function readFile(filename) {
-  try {
-    return fs.readFileSync(filename, 'utf8');
-  } catch (ex) {
-    return null;
-  }
-}
-
-/**
- * Get yaml file
- * @param {string} filename
- * @returns {object}
- */
-function getYaml(filename) {
-  return yaml.safeLoad(readFile(filename + '.yaml') || readFile(filename + '.yml'));
-}
 
 /**
  * Render all info and errors
