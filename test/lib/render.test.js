@@ -2,19 +2,11 @@
 
 const _ = require('lodash'),
   bluebird = require('bluebird'),
-  lib = require('../.'),
+  lib = require('../../lib/render'),
   sinon = require('sinon');
 
-describe('lib', function () {
-  const fn = lib;
-
-  it('returns default case', function () {
-    fn({});
-  });
-});
-
 describe('renderHealth', function () {
-  const fn = lib[this.title];
+  const fn = lib;
 
   it('returns default case', function () {
     const stats = {},
