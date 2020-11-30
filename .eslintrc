@@ -11,17 +11,20 @@
     "sinon": false,
     "DS": false
   },
-  // enable the es6 features supported by our browsers / iojs
-  "ecmaFeatures": {
-    "blockBindings": true,
-    "forOf": true,
-    "objectLiteralDuplicateProperties": true,
-    "objectLiteralShorthandProperties": true,
-    "objectLiteralShorthandMethods": true,
-    "octalLiterals": true,
-    "binaryLiterals": true,
-    "templateStrings": true,
-    "generators": true
+  "parserOptions": {
+    "ecmaVersion": 6,
+    // enable the es6 features supported by our browsers / iojs
+    "ecmaFeatures": {
+      "blockBindings": true,
+      "forOf": true,
+      "objectLiteralDuplicateProperties": true,
+      "objectLiteralShorthandProperties": true,
+      "objectLiteralShorthandMethods": true,
+      "octalLiterals": true,
+      "binaryLiterals": true,
+      "templateStrings": true,
+      "generators": true
+    }
   },
   "rules": {
     // possible errors
@@ -65,7 +68,7 @@
     "one-var": 2,
     "quotes": [2, "single", "avoid-escape"],
     "semi": [2, "always"],
-    "space-after-keywords": [2, "always"],
+    "keyword-spacing": [2],
     "space-before-blocks": [2, "always"],
     "space-before-function-paren": [2, {"anonymous": "always", "named": "never"}],
     "space-infix-ops": [1, {"int32Hint": false}],
