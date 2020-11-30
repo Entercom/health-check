@@ -1,7 +1,6 @@
 'use strict';
 
-const _ = require('lodash'),
-  lib = require('../.');
+const lib = require('../.');
 
 describe('lib', function () {
   const fn = lib;

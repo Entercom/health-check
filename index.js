@@ -1,15 +1,12 @@
 'use strict';
-
 const _get = require('lodash/get'),
   _isFunction = require('lodash/isFunction'),
   _isObject = require('lodash/isObject'),
   express = require('express'),
-  os = require('os'),
   render = require('./lib/render');
 
 /**
  *
- * @param {express.Router} router
  * @param {object} [options]
  * @param {object} [options.info]  Hash of extra info to include with their functions or objects
  * @param {[string]} [options.env]  Environment Variables to include
