@@ -24,30 +24,6 @@ exposes `/health-check` with the following information:
 
 ```json
 {
-  "nodeVersionExpected": "4.0.0",
-  "nodeVersionActual": "4.2.1",
-  "memoryUsage": {
-    "rss": 66609152,
-    "heapTotal": 58772224,
-    "heapUsed": 28870104
-  },
-  "uptime": 14.538,
-  "totalMem": 17179869184,
-  "freeMem": 1396756480,
-  "loadAvg": [
-    1.736328125,
-    1.65234375,
-    1.76123046875
-  ],
-  "heap": {
-    "total_heap_size": 58772224,
-    "total_heap_size_executable": 7340032,
-    "total_physical_size": 58772224,
-    "total_available_size": 1483938640,
-    "used_heap_size": 28890440,
-    "heap_size_limit": 1535115264
-  },
-  "host": "<some hostname>"
 }
 ```
 
