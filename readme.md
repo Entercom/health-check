@@ -15,7 +15,7 @@ Features
 
 ```js
 var express = require('express'),
-  healthCheck = require('@nymdev/health-check');
+  healthCheck = require('@entercom/health-check');
 
 express.use(healthCheck());
 ```
@@ -33,7 +33,7 @@ Environment variables can be reported if they're useful.
 
 ```js
 var express = require('express'),
-  healthCheck = require('@nymdev/health-check');
+  healthCheck = require('@entercom/health-check');
 
 express.use(healthCheck({
   env: [
@@ -49,7 +49,7 @@ Can add custom fields to be reported.  Thrown errors in custom fields will retur
 
 ```js
 var express = require('express'),
-  healthCheck = require('@nymdev/health-check');
+  healthCheck = require('@entercom/health-check');
 
 express.use(healthCheck({
   stats: {
@@ -68,7 +68,7 @@ Missing fields will return a 500.
 
 ```js
 var express = require('express'),
-  healthCheck = require('@nymdev/health-check');
+  healthCheck = require('@entercom/health-check');
 
 express.use(healthCheck({
   required: [
@@ -88,5 +88,5 @@ express.use(healthCheck({
 ## Install
 
 ```bash
-npm install --save @nymdev/health-check
+npm install --save @entercom/health-check
 ```
